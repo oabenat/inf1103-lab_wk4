@@ -1,78 +1,61 @@
 import json
 
 
-def load_inventory():
-    """Load the saved inventory total and transaction history."""
+DEFAULT_ORDERS = [
+    {"id": 1001, "product": "Wireless Mouse", "quantity": 2},
+    {"id": 1002, "product": "Keyboard", "quantity": 1},
+    {"id": 1003, "product": "USB Cable", "quantity": 3},
+]
+
+
+def load_orders():
+    """Load saved orders or return the initial order list."""
     try:
-        with open("inventory.txt", "r", encoding="utf-8") as inventory_file:
-            saved_data = json.load(inventory_file)
+        with open("orders.txt", "r", encoding="utf-8") as orders_file:
+            return json.load(orders_file)
     except FileNotFoundError:
-        return 0, []
-
-    return saved_data["total"], saved_data["history"]
+        return DEFAULT_ORDERS.copy()
 
 
-def save_inventory(total, history):
-    """Save the inventory total and transaction history."""
-    saved_data = {"total": total, "history": history}
-    with open("inventory.txt", "w", encoding="utf-8") as inventory_file:
-        json.dump(saved_data, inventory_file, indent=2)
+def save_orders(orders):
+    """Save all orders to orders.txt."""
+    with open("orders.txt", "w", encoding="utf-8") as orders_file:
+        json.dump(orders, orders_file, indent=2)
 
 
-failed_entries = 0
+def display_orders(orders):
+    """Display each order in the required comma-separated format."""
+    print("Current Orders:")
+    print()
+    for order in orders:
+        print(f"{order['id']}, {order['product']}, {order['quantity']}")
+    print()
 
 
-def get_valid_input():
-    """Prompt until the user enters a non-negative integer or quit."""
-    global failed_entries
-
+def get_quantity():
+    """Prompt until the user enters a positive whole-number quantity."""
     while True:
-        entry = input("Enter stock quantity or 'quit': ").strip()
-
-        if entry.lower() == "quit":
-            return "quit"
-
-        if entry.startswith("-") and entry[1:].isdigit():
-            print("Error: stock quantity cannot be negative.")
-            failed_entries += 1
-            continue
-
-        if entry.isdigit():
+        entry = input("Enter Quantity: ").strip()
+        if entry.isdigit() and int(entry) > 0:
             return int(entry)
-
-        print("Error: enter a whole number or 'quit'.")
-        failed_entries += 1
+        print("Error: quantity must be a positive whole number.")
 
 
-def process_delivery(current_total, new_value):
-    """Add one delivery to the running inventory total."""
-    return current_total + new_value
+orders = load_orders()
+display_orders(orders)
 
+product = input("Enter Product Name: ").strip()
+quantity = get_quantity()
+new_order = {
+    "id": orders[-1]["id"] + 1,
+    "product": product,
+    "quantity": quantity,
+}
+orders.append(new_order)
 
-def calculate_tax(amount):
-    """Return 10 percent tax for one delivery."""
-    return amount * 0.10
-
-
-def generate_report(total_units, failed_attempts):
-    """Print the final processing summary."""
-    print(f"Total Deliveries Processed: {total_units}")
-    print(f"Number of Failed/Rejected Entries: {failed_attempts}")
-
-
-inventory, transaction_history = load_inventory()
-deliveries_processed = 0
-total_tax = 0
-
-while True:
-    delivery = get_valid_input()
-
-    if delivery == "quit":
-        save_inventory(inventory, transaction_history)
-        generate_report(deliveries_processed, failed_entries)
-        break
-
-    inventory = process_delivery(inventory, delivery)
-    transaction_history.append(delivery)
-    total_tax += calculate_tax(delivery)
-    deliveries_processed += 1
+print()
+print("New Order Added:")
+print(f"{new_order['id']}, {new_order['product']}, {new_order['quantity']}")
+save_orders(orders)
+print()
+print("Order successfully saved to orders.txt")
