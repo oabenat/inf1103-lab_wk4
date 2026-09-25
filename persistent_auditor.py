@@ -12,6 +12,13 @@ def load_inventory():
     return saved_data["total"], saved_data["history"]
 
 
+def save_inventory(total, history):
+    """Save the inventory total and transaction history."""
+    saved_data = {"total": total, "history": history}
+    with open("inventory.txt", "w", encoding="utf-8") as inventory_file:
+        json.dump(saved_data, inventory_file, indent=2)
+
+
 failed_entries = 0
 
 
@@ -61,6 +68,7 @@ while True:
     delivery = get_valid_input()
 
     if delivery == "quit":
+        save_inventory(inventory, transaction_history)
         generate_report(deliveries_processed, failed_entries)
         break
 
