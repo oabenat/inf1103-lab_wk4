@@ -1,3 +1,17 @@
+import json
+
+
+def load_inventory():
+    """Load the saved inventory total and transaction history."""
+    try:
+        with open("inventory.txt", "r", encoding="utf-8") as inventory_file:
+            saved_data = json.load(inventory_file)
+    except FileNotFoundError:
+        return 0, []
+
+    return saved_data["total"], saved_data["history"]
+
+
 failed_entries = 0
 
 
@@ -39,7 +53,7 @@ def generate_report(total_units, failed_attempts):
     print(f"Number of Failed/Rejected Entries: {failed_attempts}")
 
 
-inventory = 0
+inventory, transaction_history = load_inventory()
 deliveries_processed = 0
 total_tax = 0
 
